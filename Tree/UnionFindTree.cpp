@@ -1,5 +1,6 @@
 // Union Find Tree
 
+// 概要: データ構造をマージする一般的なテク + 経路圧縮
 // 解説:
 //   http://algorithms.blog55.fc2.com/blog-entry-46.html
 //   http://www.prefield.com/algorithm/container/union_find.html
@@ -62,7 +63,7 @@ class UnionFindLight {
   void unite(int a, int b) {
     auto x = find(a), y = find(b);
     if(x == y) return;
-    if(p_[x] < p_[y]) std::swap(x, y);
+    if(-p_[x] < -p_[y]) std::swap(x, y);
     p_[x] += p_[y];
     p_[y] = x;
   }
@@ -104,6 +105,39 @@ template<typename T, typename W> class WeightedUnionFind {
   std::unordered_map<T, T> parent_;
   std::unordered_map<T, W> weight_;
   std::unordered_map<T, int> rank_;
+};
+
+// 部分永続 Union-Find: AGC002D
+//   要素数でマージ (x が根 ⇒ p_[x] = -(要素数))
+//   経路圧縮を捨てることで unite 履歴を保存
+//   now_  := unite 回数
+//   t_[x] := 頂点 x が子になったときの unite 回数
+//   s_[x] := (t 回目の unite 後の, 根 x に連結な頂点数)
+#include<algorithm>
+#include<utility>
+#include<vector>
+class PartiallyPersistentUnionFind {
+ public:
+  PartiallyPersistentUnionFind(int n) : now_(0), p_(n, -1), t_(n, -1), s_(n, std::vector<std::pair<int, int>>(1, std::make_pair(-1, -1))) {}
+  int unite(int a, int b) {
+    ++now_;
+    auto x = find(now_, a), y = find(now_, b);
+    if(x == y) return now_;
+    if(-p_[x] < -p_[y]) std::swap(x, y);
+    p_[x] += p_[y];
+    p_[y] = x;
+    s_[x].emplace_back(now_, p_[x]);
+    return t_[y] = now_;
+  }
+  int find(int t, int x) {return (t_[x] == -1 || t < t_[x]) ? x : find(t, p_[x]);}
+  int size(int t, int x) {
+    auto root = find(t, x);
+    return -std::prev(std::upper_bound(std::begin(s_[root]), std::end(s_[root]), std::make_pair(t, 0)))->second;
+  }
+ private:
+  int now_;
+  std::vector<int> p_, t_;
+  std::vector<std::vector<std::pair<int, int>>> s_;
 };
 
 #include<iostream>
