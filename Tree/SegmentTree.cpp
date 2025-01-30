@@ -166,15 +166,14 @@ template<Monoid M> class SegmentTreeD {
 #include<vector>
 template<ProductMM P> class SegmentTreeLP {
  public:
-  using Idx = int;
-  SegmentTreeLP(Idx n) : N(geqb(n)), H(lsb(geqb(n))), dat(geqb(n) << 1, P::L::e()), laz(geqb(n) << 1, P::R::e()) {}
-  void set(Idx a, P::L::S x) {
+  SegmentTreeLP(P::Idx n) : N(geqb(n)), H(lsb(geqb(n))), dat(geqb(n) << 1, P::L::e()), laz(geqb(n) << 1, P::R::e()) {}
+  void set(P::Idx a, P::L::S x) {
     thrust(a += N);
     dat[a] = x;
     laz[a] = P::R::e();
     recalc(a);
   }
-  void update(Idx a, Idx b, P::R::S x) {
+  void update(P::Idx a, P::Idx b, P::R::S x) {
     if(a >= b) return;
     thrust(a += N);
     thrust(b += N - 1);
@@ -185,7 +184,7 @@ template<ProductMM P> class SegmentTreeLP {
     recalc(a);
     recalc(b);
   }
-  P::L::S query(Idx a, Idx b) {
+  P::L::S query(P::Idx a, P::Idx b) {
     thrust(a += N);
     thrust(b += N - 1);
     auto vl = P::L::e(), vr = P::L::e();
@@ -196,23 +195,23 @@ template<ProductMM P> class SegmentTreeLP {
     return P::L::f(vl, vr);
   }
  private:
-  constexpr Idx geqb(Idx n) const {return n & (n - 1) ? geqb(n + (n & -n)) : n;}
-  constexpr Idx leqb(Idx n) const {return n & (n - 1) ? leqb(n & (n - 1)) : n;}
-  inline Idx lsb(Idx n) const {return n & 1 ? 0 : 1 + lsb(n >> 1);}
-  inline Idx parent(Idx k) const {return (k >> 1);}
-  inline Idx lchild(Idx k) const {return (k << 1);}
-  inline Idx rchild(Idx k) const {return (k << 1) | 1;}
-  inline P::L::S reflect(Idx k) const {return laz[k]==P::R::e() ? dat[k] : P::f(dat[k], laz[k], leqb(k)>>1);}
-  inline void propagate(Idx k) {
+  constexpr P::Idx geqb(P::Idx n) const {return n & (n - 1) ? geqb(n + (n & -n)) : n;}
+  constexpr P::Idx leqb(P::Idx n) const {return n & (n - 1) ? leqb(n & (n - 1)) : n;}
+  inline P::Idx lsb(P::Idx n) const {return n & 1 ? 0 : 1 + lsb(n >> 1);}
+  inline P::Idx parent(P::Idx k) const {return (k >> 1);}
+  inline P::Idx lchild(P::Idx k) const {return (k << 1);}
+  inline P::Idx rchild(P::Idx k) const {return (k << 1) | 1;}
+  inline P::L::S reflect(P::Idx k) const {return laz[k]==P::R::e() ? dat[k] : P::f(dat[k], laz[k], leqb(k)>>1);}
+  inline void propagate(P::Idx k) {
     if(laz[k] == P::R::e()) return;
     laz[lchild(k)] = P::R::f(laz[lchild(k)], laz[k]);
     laz[rchild(k)] = P::R::f(laz[rchild(k)], laz[k]);
     dat[k] = reflect(k);
     laz[k] = P::R::e();
   }
-  inline void thrust(Idx k) {for(auto i = H; i; --i) propagate(k >> i);}
-  inline void recalc(Idx k) {while(k >>= 1) dat[k] = P::L::f(reflect(lchild(k)), reflect(rchild(k)));}
-  Idx N, H;
+  inline void thrust(P::Idx k) {for(auto i = H; i; --i) propagate(k >> i);}
+  inline void recalc(P::Idx k) {while(k >>= 1) dat[k] = P::L::f(reflect(lchild(k)), reflect(rchild(k)));}
+  P::Idx N, H;
   std::vector<typename P::L::S> dat;
   std::vector<typename P::R::S> laz;
 };
@@ -230,18 +229,17 @@ template<ProductMM P> class SegmentTreeLP {
 #include<memory>
 template<ProductMM P> class SegmentTreeDLP {
  public:
-  using Idx = long long;
-  SegmentTreeDLP(Idx L, Idx R) : L(L), R(R), root(std::make_unique<Node>(P::L::e(), P::R::e(), L, R)) {}
-  void set(Idx a, P::L::S x) {set(a, x, root, L, R);}
-  void update(Idx a, Idx b, P::R::S x) {update(a, b, x, root, L, R);}
-  P::L::S query(Idx a, Idx b) {return query(a, b, root, L, R);}
+  SegmentTreeDLP(P::Idx L, P::Idx R) : L(L), R(R), root(std::make_unique<Node>(P::L::e(), P::R::e(), L, R)) {}
+  void set(P::Idx a, P::L::S x) {set(a, x, root, L, R);}
+  void update(P::Idx a, P::Idx b, P::R::S x) {update(a, b, x, root, L, R);}
+  P::L::S query(P::Idx a, P::Idx b) {return query(a, b, root, L, R);}
  private:
   struct Node {
     P::L::S val;
     P::R::S laz;
-    Idx L, R;
+    P::Idx L, R;
     std::unique_ptr<Node> lchild, rchild;
-    Node(P::L::S val, P::R::S laz, Idx L, Idx R) : val(val), laz(laz), L(L), R(R), lchild(nullptr), rchild(nullptr) {}
+    Node(P::L::S val, P::R::S laz, P::Idx L, P::Idx R) : val(val), laz(laz), L(L), R(R), lchild(nullptr), rchild(nullptr) {}
   };
   using Ptr = std::unique_ptr<Node>;
   inline P::L::S reflect(const Ptr& n) {return n->laz==P::R::e() ? n->val : P::f(n->val, n->laz, n->R-n->L);}
@@ -256,7 +254,7 @@ template<ProductMM P> class SegmentTreeDLP {
     n->laz = P::R::e();
   }
   inline void recalc(const Ptr& n) {n->val = P::L::f(reflect(n->lchild), reflect(n->rchild));}
-  void set(Idx a, P::L::S x, const Ptr &n, Idx l, Idx r) {
+  void set(P::Idx a, P::L::S x, const Ptr &n, P::Idx l, P::Idx r) {
     propagate(n);
     if(l+1 == r) {
       n->val = x;
@@ -267,7 +265,7 @@ template<ProductMM P> class SegmentTreeDLP {
     else      set(a, x, n->rchild, m, r);
     recalc(n);
   }
-  void update(Idx a, Idx b, P::R::S x, const Ptr &n, Idx l, Idx r) {
+  void update(P::Idx a, P::Idx b, P::R::S x, const Ptr &n, P::Idx l, P::Idx r) {
     propagate(n);
     if(b <= l || r <= a) return;
     if(a <= l && r <= b) {
@@ -280,7 +278,7 @@ template<ProductMM P> class SegmentTreeDLP {
     update(a, b, x, n->rchild, m, r);
     recalc(n);
   }
-  P::L::S query(Idx a, Idx b, const Ptr &n, Idx l, Idx r) {
+  P::L::S query(P::Idx a, P::Idx b, const Ptr &n, P::Idx l, P::Idx r) {
     propagate(n);
     if(b <= l || r <= a) return P::L::e();
     if(a <= l && r <= b) return reflect(n);
@@ -289,7 +287,7 @@ template<ProductMM P> class SegmentTreeDLP {
     auto vr = query(a, b, n->rchild, m, r);
     return P::L::f(vl, vr);
   }
-  Idx L, R;
+  P::Idx L, R;
   Ptr root;
 };
 
