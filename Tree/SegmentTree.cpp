@@ -54,7 +54,7 @@ template<class T = long long> struct SumPMM {
   using Idx = T;
   struct L : M {};
   struct R : M {};
-  static inline L::S f(L::S l, R::S r, Idx n) {return l + r * n;}
+  static inline L::S f(L::S l, R::S r, Idx n) {return l==L::e() ? r*n : l+r*n;}
 };
 template<class T = long long> struct MaxPMM {
   using Idx = T;
@@ -68,7 +68,7 @@ template<class T = long long> struct MaxPMM {
     static inline S e() {return S();};
     static inline S f(S l, S r) {return l + r;}
   };
-  static inline L::S f(L::S l, R::S r, Idx n) {return l + r;}
+  static inline L::S f(L::S l, R::S r, Idx n) {return l==L::e() ? r : l+r;}
 };
 
 // セグメント木 (非再帰)
