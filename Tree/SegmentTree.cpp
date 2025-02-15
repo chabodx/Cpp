@@ -24,7 +24,7 @@
 //   遅延伝播構造 (M, S, φ) := モノイド M と半群 S とモノイド準同型 φ: M → End(S) の組
 //   M についての自己準同型モノイド := モノイド M の自己準同型の全体と関数合成によるモノイド (End(M), ◦, id)
 //   S についての自己準同型モノイド :=     半群 S の自己準同型の全体と関数合成によるモノイド (End(S), ◦, id)
-//   M による X へのモノイド作用 := モノイド (M, ・, e) と集合 X に対して, 以下をみたすような演算 ⋆: M × X → X
+//   M による X へのモノイド作用 := モノイド (M, ・, e) と集合 X に対して, 以下をみたすようなモノイド準同型 ⋆: M × X → X
 //     任意の f, g ∈ M と x ∈ X について, (f・g) ⋆ x = f ⋆ (g ⋆ x)
 //     任意の x ∈ X について, e ⋆ x = x
 //   遅延伝播構造は加群の一般化である
@@ -84,8 +84,8 @@
 // モノイド
 #include<concepts>
 template<class T> concept Monoid = requires(T x, T::S s) {
-  {x.e()}     -> std::same_as<typename T::S>;
   {x.f(s, s)} -> std::same_as<typename T::S>;
+  {x.e()}     -> std::same_as<typename T::S>;
 };
 template<class T> concept MonoidLP = requires(T x, T::L::S l, T::R::S r, T::Idx n) {
   requires Monoid<typename T::L>;
@@ -181,7 +181,7 @@ template<Monoid M> class SegmentTree {
 };
 
 // 動的セグメント木
-//   モノイド (S, fs, es) を扱う
+//   モノイド (S, f, e) を扱う
 //   半開区間 [l, r) で操作
 //   クエリは [L, R) の範囲
 //   計算量:
@@ -228,8 +228,7 @@ template<Monoid M> class SegmentTreeD {
 };
 
 // 遅延伝播セグメント木 (非再帰)
-//   半群 (S, fs, es), モノイド (M, fm, em), モノイド準同型 fa: M → End(S) を扱う
-//                                        ⇔ モノイド作用 fa: M × S → S
+//   モノイド L, モノイド R, 自然数の加法についての半群 Idx, モノイド作用 f: L × (R × Idx) → L を扱う
 //   半開区間 [l, r) で操作
 //   クエリは [0, n) の範囲
 //   木の実装は 1-indexed
@@ -292,7 +291,7 @@ template<MonoidLP M> class SegmentTreeLP {
 };
 
 // 遅延伝播動的セグメント木
-//   直積モノイド (S, fs, es) × (E, fe, ee) と, 作用 fa: S × E → S を扱う
+//   モノイド L, モノイド R, 自然数の加法についての半群 Idx, モノイド作用 f: L × (R × Idx) → L を扱う
 //   半開区間 [l, r) で操作
 //   クエリは [L, R) の範囲
 //   計算量:
