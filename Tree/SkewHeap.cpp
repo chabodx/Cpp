@@ -1,5 +1,8 @@
-// Skew Heap: ならしO(log N)で色々できるmeldable heap
-// 計算量:
+// Skew Heap
+//   データ構造をマージする一般的なテクを利用したmeldable heap
+//   気持ちとしては全頂点に対して次の条件を維持したい: 左の子孫の高さ > 右の子孫の高さ
+//   meld(s, t): s.key<t.keyになるようスワップし, sを新たな根とし, meld(sの高さが小さい方の子, t)
+// ならし計算量:
 //   meld  O(log N)
 //   push  O(log N)
 //   pop   O(log N)
